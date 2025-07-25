@@ -1,0 +1,60 @@
+# Development environment configuration
+
+# Model configuration
+model:
+  architecture: "resnet50"
+  num_classes: 2
+  pretrained: true
+  checkpoint_path: null
+  device: "auto"
+
+# Training configuration (faster for development)
+training:
+  batch_size: 16
+  learning_rate: 0.001
+  num_epochs: 10
+  weight_decay: 0.0001
+  val_split: 0.2
+  save_every: 5
+  early_stopping_patience: 5
+  use_tensorboard: true
+
+# Data configuration
+data:
+  data_dir: "data"
+  csv_file: null
+  image_size: [224, 224]
+  binary_classification: true
+  num_workers: 2
+  augmentation: true
+
+# Grad-CAM configuration
+gradcam:
+  target_layer: "layer4"
+  alpha: 0.4
+  colormap: "jet"
+  use_relu: true
+
+# Flask configuration (development mode)
+flask:
+  host: "127.0.0.1"
+  port: 5000
+  debug: true
+  max_content_length: 16777216  # 16MB
+  upload_folder: "static/uploads"
+  allowed_extensions: ["png", "jpg", "jpeg", "dcm", "dicom"]
+  cors_enabled: true
+
+# Logging configuration (verbose for development)
+logging:
+  level: "DEBUG"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_dir: "logs"
+  max_bytes: 10485760  # 10MB
+  backup_count: 3
+
+# Security configuration (relaxed for development)
+security:
+  enable_csrf: false
+  max_requests_per_minute: 1000
+  trusted_hosts: ["localhost", "127.0.0.1", "0.0.0.0"]

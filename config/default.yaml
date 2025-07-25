@@ -1,0 +1,60 @@
+# Default configuration for XAI Medical Images
+
+# Model configuration
+model:
+  architecture: "resnet50"
+  num_classes: 2
+  pretrained: true
+  checkpoint_path: null
+  device: "auto"
+
+# Training configuration
+training:
+  batch_size: 32
+  learning_rate: 0.0001
+  num_epochs: 50
+  weight_decay: 0.0001
+  val_split: 0.2
+  save_every: 10
+  early_stopping_patience: 10
+  use_tensorboard: true
+
+# Data configuration
+data:
+  data_dir: "data"
+  csv_file: null
+  image_size: [224, 224]
+  binary_classification: true
+  num_workers: 2
+  augmentation: true
+
+# Grad-CAM configuration
+gradcam:
+  target_layer: "layer4"
+  alpha: 0.4
+  colormap: "jet"
+  use_relu: true
+
+# Flask configuration
+flask:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  max_content_length: 16777216  # 16MB
+  upload_folder: "static/uploads"
+  allowed_extensions: ["png", "jpg", "jpeg", "dcm", "dicom"]
+  cors_enabled: true
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_dir: "logs"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+
+# Security configuration
+security:
+  enable_csrf: true
+  max_requests_per_minute: 60
+  trusted_hosts: ["localhost", "127.0.0.1"]
