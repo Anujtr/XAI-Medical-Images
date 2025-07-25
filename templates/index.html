@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XAI Medical Images - Chest X-ray Analysis</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 900px;
+            width: 90%;
+            margin: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+        
+        .upload-section {
+            background: #f8f9ff;
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+        
+        .upload-section.dragover {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .upload-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .upload-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .analyze-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .analyze-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+        
+        .analyze-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .images-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .image-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .image-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .image-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .prediction-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .prediction-result {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .confidence-score {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .info-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .info-section h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .disclaimer {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .disclaimer strong {
+            color: #856404;
+        }
+        
+        @media (max-width: 768px) {
+            .images-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 XAI Medical Images</h1>
+            <p>AI-powered chest X-ray analysis with explainable visualization</p>
+        </div>
+        
+        <div class="upload-section" id="uploadSection">
+            <h3>📤 Upload Chest X-ray Image</h3>
+            <p>Supported formats: DICOM (.dcm), JPEG, PNG</p>
+            <input type="file" id="fileInput" class="file-input" accept=".dcm,.jpg,.jpeg,.png,.dicom" />
+            <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+                Choose File
+            </button>
+            <p id="fileName" style="margin-top: 15px; color: #666;"></p>
+            <button class="analyze-button" id="analyzeButton" onclick="analyzeImage()">
+                🔍 Analyze Image
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing image... This may take a few moments.</p>
+        </div>
+        
+        <div class="error-message" id="errorMessage"></div>
+        
+        <div class="results-section" id="results">
+            <div class="prediction-card" id="predictionCard">
+                <div class="prediction-result" id="predictionResult"></div>
+                <div class="confidence-score" id="confidenceScore"></div>
+            </div>
+            
+            <div class="images-container">
+                <div class="image-card">
+                    <h3>📋 Original Image</h3>
+                    <img id="originalImage" alt="Original X-ray" />
+                </div>
+                <div class="image-card">
+                    <h3>🎯 Grad-CAM Visualization</h3>
+                    <img id="gradcamImage" alt="Grad-CAM heatmap" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <h3>ℹ️ About Grad-CAM</h3>
+            <p>
+                Grad-CAM (Gradient-weighted Class Activation Mapping) shows which parts of the X-ray 
+                the AI model focused on when making its prediction. Warmer colors (red/yellow) indicate 
+                areas of higher importance, while cooler colors (blue) show less relevant regions.
+            </p>
+        </div>
+        
+        <div class="disclaimer">
+            <strong>⚠️ Medical Disclaimer:</strong> This tool is for educational and research purposes only. 
+            It should not be used for actual medical diagnosis. Always consult qualified healthcare 
+            professionals for medical decisions.
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        
+        // File input change handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = `Selected: ${file.name}`;
+                document.getElementById('analyzeButton').style.display = 'inline-block';
+                hideResults();
+            }
+        });
+        
+        // Drag and drop functionality
+        const uploadSection = document.getElementById('uploadSection');
+        
+        uploadSection.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+        
+        uploadSection.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+        });
+        
+        uploadSection.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (isValidFile(file)) {
+                    selectedFile = file;
+                    document.getElementById('fileName').textContent = `Selected: ${file.name}`;
+                    document.getElementById('analyzeButton').style.display = 'inline-block';
+                    hideResults();
+                } else {
+                    showError('Please select a valid image file (DICOM, JPEG, or PNG).');
+                }
+            }
+        });
+        
+        function isValidFile(file) {
+            const validTypes = ['image/jpeg', 'image/png', 'application/dicom'];
+            const validExtensions = ['.dcm', '.dicom', '.jpg', '.jpeg', '.png'];
+            
+            return validTypes.includes(file.type) || 
+                   validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        }
+        
+        function analyzeImage() {
+            if (!selectedFile) {
+                showError('Please select a file first.');
+                return;
+            }
+            
+            // Show loading
+            showLoading();
+            hideResults();
+            hideError();
+            
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            // Send request
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.success) {
+                    showResults(data);
+                } else {
+                    showError(data.error || 'Analysis failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Network error. Please check your connection and try again.');
+                console.error('Error:', error);
+            });
+        }
+        
+        function showResults(data) {
+            // Update prediction card
+            const predictionResult = document.getElementById('predictionResult');
+            const confidenceScore = document.getElementById('confidenceScore');
+            const predictionCard = document.getElementById('predictionCard');
+            
+            predictionResult.textContent = data.prediction;
+            confidenceScore.textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+            
+            // Color code based on prediction
+            if (data.prediction.toLowerCase().includes('normal')) {
+                predictionCard.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+            } else {
+                predictionCard.style.background = 'linear-gradient(135deg, #dc3545 0%, #fd7e14 100%)';
+            }
+            
+            // Update images
+            document.getElementById('originalImage').src = data.original_image;
+            document.getElementById('gradcamImage').src = data.gradcam_image;
+            
+            // Show results section
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('analyzeButton').disabled = true;
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('analyzeButton').disabled = false;
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
