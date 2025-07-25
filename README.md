@@ -21,7 +21,7 @@ A Flask web application for analyzing chest X-rays using deep learning with expl
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/Anujtr/XAI-Medical-Images/tree/main
 cd XAI-Medical-Images
 ```
 
